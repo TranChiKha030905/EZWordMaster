@@ -6,6 +6,7 @@ import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -75,7 +76,6 @@ import com.example.ezwordmaster.EzWordMasterApplication
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ViewModelFactory
 import com.example.ezwordmaster.model.WordDetailsUiState
-import com.example.ezwordmaster.ui.common.CommonTopAppBar
 import com.example.ezwordmaster.ui.common.GradientBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,27 +96,48 @@ fun DictionaryScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(WindowInsets.statusBars.asPaddingValues())
-                        .height(56.dp),
+                        .height(64.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        CommonTopAppBar(
-                            title = "Tra từ",
-                            canNavigateBack = false,
-                            onNavigateUp = {},
-                            onLogoClick = {}
-                        )
+                    // Logo app bên trái
+                    IconButton(onClick = { /* Có thể dẫn về Home */ }) {
+                        Box(
+                            modifier = Modifier.size(50.dp), // khung logo
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.logo),
+                                contentDescription = "App Logo",
+                                modifier = Modifier.size(46.dp) // logo thật sự to hơn
+                            )
+                        }
                     }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Title
+                    Text(
+                        text = "Tra từ",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // Nút notification
                     IconButton(onClick = { navController.navigate("notificationscreen") }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_bell),
                             contentDescription = "Thông báo",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(40.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Spacer(modifier = Modifier.width(12.dp))
                 }
             },
+
             containerColor = Color.Transparent
         ) { paddingValues ->
             Column(

@@ -1,15 +1,10 @@
-// Vị trí: app/src/main/java/com/example/ezwordmaster/ui/screens/notification/NotificationScreen.kt
 package com.example.ezwordmaster.ui.screens.notification
 
-// --- KHỐI IMPORT ĐẦY ĐỦ VÀ CHÍNH XÁC ---
-// *** SỬA TÊN HÀM IMPORT ***
-// ------------------------------------
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,21 +29,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -55,8 +46,6 @@ import com.example.ezwordmaster.EzWordMasterApplication
 import com.example.ezwordmaster.R
 import com.example.ezwordmaster.ViewModelFactory
 import com.example.ezwordmaster.data.local.NotificationHistory
-import com.example.ezwordmaster.ui.common.CommonTopAppBar
-import com.example.ezwordmaster.ui.common.GradientBackground
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -65,19 +54,22 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(navController: NavHostController) {
-
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val application = context.applicationContext as EzWordMasterApplication
     val appContainer = application.appContainer
-    val viewModel: NotificationViewModel = viewModel(
-        factory = ViewModelFactory(appContainer)
-    )
-
+    val viewModel: NotificationViewModel = viewModel(factory = ViewModelFactory(appContainer))
     val notifications by viewModel.notifications.collectAsState()
 
-    GradientBackground {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
+        Image(
+            painter = painterResource(id = R.drawable.bg),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
         Scaffold(
-            // Giữ nguyên topBar
             topBar = {
                 Row(
                     modifier = Modifier
@@ -86,126 +78,105 @@ fun NotificationScreen(navController: NavHostController) {
                         .height(56.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        CommonTopAppBar(
-                            title = "Thông Báo",
-                            canNavigateBack = true,
-                            onNavigateUp = { navController.popBackStack() },
-                            onLogoClick = {
-                                navController.popBackStack()
-                            }
+                    // Logo app bên trái, to hơn
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "App Logo",
+                            modifier = Modifier.size(80.dp) // phóng to logo
                         )
                     }
-                    IconButton(onClick = {
-                        viewModel.deleteAllNotifications()
-                    }) {
+
+                    Spacer(modifier = Modifier.width(32.dp))
+
+                    // Title
+                    Text(
+                        text = "Thông Báo",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    // Nút xóa tất cả
+                    IconButton(onClick = { viewModel.deleteAllNotifications() }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Xóa tất cả",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
+
                     Spacer(modifier = Modifier.width(8.dp))
                 }
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
-            if (notifications.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.NotificationsOff,
-                            contentDescription = "Không có thông báo",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "Không có thông báo nào",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (notifications.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.NotificationsOff,
+                                contentDescription = "Không có thông báo",
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "Không có thông báo nào",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
                     }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(notifications, key = { it.id }) { notification ->
-
-                        val density = LocalDensity.current
-                        val thresholdPx = with(density) { 150.dp.toPx() }
-
-                        // *** SỬA TÊN HÀM TỪ 'rememberDismissState' ***
-                        val dismissState = rememberSwipeToDismissBoxState(
-                            confirmValueChange = { newValue ->
-                                if (newValue == SwipeToDismissBoxValue.EndToStart || newValue == SwipeToDismissBoxValue.StartToEnd) {
-                                    viewModel.deleteNotification(notification)
-                                    true
-                                } else {
-                                    false
-                                }
-                            },
-                            positionalThreshold = { thresholdPx }
-                        )
-
-                        SwipeToDismissBox(
-                            state = dismissState,
-                            backgroundContent = {
-                                val color = when (dismissState.targetValue) {
-                                    SwipeToDismissBoxValue.EndToStart -> Color.Red.copy(alpha = 0.8f)
-                                    SwipeToDismissBoxValue.StartToEnd -> Color.Red.copy(alpha = 0.8f)
-                                    else -> Color.Transparent
-                                }
-                                val alignment = when (dismissState.targetValue) {
-                                    SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
-                                    else -> Alignment.CenterStart
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(color, shape = CardDefaults.shape)
-                                        .padding(12.dp),
-                                    contentAlignment = alignment
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            },
-                        ) {
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(notifications, key = { it.id }) { notification ->
                             NotificationItem(notification)
                         }
                     }
+                }
+
+                // --- Nút Quay lại ở dưới ---
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                        .height(48.dp)
+                ) {
+                    Text("Quay lại")
                 }
             }
         }
     }
 }
 
-// Giữ nguyên NotificationItem
 @Composable
 fun NotificationItem(notification: NotificationHistory) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -246,14 +217,12 @@ fun NotificationItem(notification: NotificationHistory) {
             Text(
                 text = formatTimestamp(notification.timestamp),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.End
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
-// Giữ nguyên hàm formatTimestamp
 private fun formatTimestamp(timestamp: Long): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
